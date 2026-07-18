@@ -106,9 +106,9 @@ end $$;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
--- v1 has NO auth: grant the anon role full access. Data is protected only by
--- the project URL + anon key. To lock down later, add auth and replace these
--- policies with auth.uid()-scoped ones.
+-- This baseline grants the anon role full access (no auth). Migration
+-- 0002_auth.sql REPLACES these with authenticated-only policies — run it too if
+-- you want the app gated behind a login (recommended). Run migrations in order.
 -- ---------------------------------------------------------------------------
 do $$
 declare t text;

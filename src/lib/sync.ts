@@ -6,6 +6,7 @@ import { observablePersistAsyncStorage } from '@legendapp/state/persist-plugins/
 import { observablePersistIndexedDB } from '@legendapp/state/persist-plugins/indexeddb';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
+import { isAuthed$ } from './authState';
 import type { Table } from '@/modules/gym/types';
 
 /**
@@ -78,6 +79,10 @@ export function createTable<T extends { id: string }>(
         as: 'object',
         realtime: true,
         persist: { name: collection },
+        // Hold remote sync until the user is logged in, so we never hit the
+        // authenticated-only RLS policies while signed out. Local persistence
+        // (below via the plugin) still works immediately and offline.
+        waitFor: isAuthed$,
       }),
     ) as unknown as Observable<Table<T>>;
   }

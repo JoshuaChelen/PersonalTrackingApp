@@ -1,12 +1,14 @@
 import { useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Screen, Card, H1, H3, Muted, Body } from '@/components/ui';
 import { MODULES } from '@/modules/registry';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
 import { colors, spacing, radius, font } from '@/theme';
 
 export default function Home() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
 
   return (
     <Screen>
@@ -43,9 +45,16 @@ export default function Home() {
         />
         <Muted>
           {isSupabaseConfigured
-            ? 'Cloud sync on — data syncs across your devices.'
+            ? user?.email
+              ? `Synced as ${user.email}`
+              : 'Cloud sync on — data syncs across your devices.'
             : 'Local-only — add Supabase keys to sync across devices.'}
         </Muted>
+        {isSupabaseConfigured && user ? (
+          <Pressable onPress={signOut} hitSlop={8} style={{ marginLeft: 'auto' }}>
+            <Muted style={{ color: colors.primary }}>Sign out</Muted>
+          </Pressable>
+        ) : null}
       </View>
     </Screen>
   );

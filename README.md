@@ -40,9 +40,15 @@ device but does not sync across devices).
 
 ## Enabling cloud sync (Supabase)
 
+Supabase is the cloud database that syncs your data across devices — it's the
+one thing that makes the same workouts appear on your phone and your computers.
+(Hosting the web app on Vercel, below, is a separate concern: that just serves
+the web *page*; it stores no data.)
+
 1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL editor, run `supabase/migrations/0001_init.sql`, then
-   `supabase/seed.sql` (the seed populates the muscle + exercise catalogue).
+2. In the SQL editor, run in order: `supabase/migrations/0001_init.sql`,
+   `supabase/migrations/0002_auth.sql`, then `supabase/seed.sql` (the seed
+   populates the muscle + exercise catalogue).
 3. Copy your project URL and anon key (Settings → API) into `.env`:
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
@@ -51,27 +57,60 @@ device but does not sync across devices).
 4. Restart the dev server. Data now syncs across every device using the same
    keys, with realtime updates.
 
-> **Security note:** v1 has no login. The anon key ships in the client bundle, so
-> your data is protected only by the obscurity of your project URL + key. The
-> schema keeps RLS enabled with permissive `anon` policies; to lock it down later,
-> add auth and switch the policies in `0001_init.sql` to `auth.uid()`-scoped ones.
+### Set up your login
+
+`0002_auth.sql` locks the data behind an authenticated login. This is a
+single-account personal app, so:
+
+1. Authentication → Providers → **Email**: enable it, and turn **off** "Enable
+   sign ups" (so only your account can ever exist).
+2. Authentication → Users → **Add user**: create your one account (email +
+   password), and confirm it.
+3. Launch the app — it now shows a login screen. Sign in once per device and you
+   stay signed in (session is persisted + auto-refreshed) until you tap Sign out.
+
+> **Security note:** the anon key ships in the client bundle (public by design),
+> but with `0002_auth.sql` the RLS policies require an authenticated session, so
+> the data isn't readable with the key alone. Because only your account exists,
+> "any authenticated user" effectively means you. To grow to true multi-user
+> later, add a `user_id` column and `auth.uid()`-scoped policies (see the note in
+> `0002_auth.sql`).
 
 ## Deploying
 
-**Web / PWA (desktop):**
+**Web / PWA (desktop + laptop):**
 ```bash
 npx expo export -p web     # outputs a static site to ./dist
 ```
-Serve `./dist` as a static site on Railway (or any static host). Because the web
-build uses `output: "single"` (SPA), configure the host to fall back to
-`index.html` for all routes.
+Deploy `./dist` as a static site on **Vercel** (`vercel.json` in the repo sets
+the build command, output dir, and the SPA rewrite to `index.html` that the
+`output: "single"` build needs). Add `EXPO_PUBLIC_SUPABASE_URL` and
+`EXPO_PUBLIC_SUPABASE_ANON_KEY` as Vercel project env vars so the build embeds
+them. Any static host works (Netlify, Cloudflare Pages, etc.) — just replicate
+the SPA fallback.
 
-**Phone (native install):** iterate with Expo Go (`npm run start`). For a real
-installable build, use [EAS Build](https://docs.expo.dev/build/introduction/):
+On Android/Chrome you can "Add to Home Screen" to install this as a PWA (an
+app-like icon, full screen). Note: the web export has no service worker, so the
+PWA won't load with *zero* signal — use the native Android build below for
+fully-offline gym logging.
+
+**Phone (native install, Android):** iterate day-to-day with Expo Go
+(`npm run start`). For a real installable app with true offline support, use
+[EAS Build](https://docs.expo.dev/build/introduction/) — `eas.json` defines a
+`preview` profile that outputs an installable **APK**:
 ```bash
-npm i -g eas-cli && eas build --profile development --platform android
+npm i -g eas-cli
+eas login
+eas build:configure
+# Make the Supabase keys available to the cloud build (.env is gitignored, so
+# it isn't uploaded). Set them as EAS environment variables once:
+eas env:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://xxxx.supabase.co"
+eas env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "eyJhbGci..."
+eas build --profile preview --platform android   # download + install the APK
 ```
-(iOS builds run in the cloud via EAS — no Mac required.)
+Because native bundles the JS, logging works with no signal and syncs when back
+online. (iOS builds also run in the cloud via EAS — no Mac required — but
+installing on an iPhone needs an Apple Developer account.)
 
 ## Project structure
 

@@ -9,13 +9,18 @@
 - Offline-first local persistence; Legend-State + Supabase sync wired
 - Supabase schema + seed SQL; unit tests for recommend/stats logic
 
-## Next up
-- [ ] Create Supabase project, run migration + seed, fill in .env
-- [ ] Deploy web build to Railway (PWA)
-- [ ] EAS build to install on phone
+## Next up (cross-device sync — code done, needs your accounts)
+Code + config landed: email/password login, session persistence, auth-gated
+sync (`waitFor`), `0002_auth.sql`, `vercel.json`, `eas.json`. Remaining steps
+are account setup (see README):
+- [ ] Create Supabase project; run migrations 0001 + 0002 + seed; fill `.env`
+- [ ] Enable Email auth, disable sign-ups, create your one account
+- [ ] Deploy web build to **Vercel** (was Railway); add env vars there
+- [ ] EAS `preview` APK to install on Android (set EAS env vars first)
 - [ ] Edit an existing exercise (only create + delete exist today)
 
 ## Backlog / ideas
-- Passcode + auth-scoped RLS (currently no login)
+- Multi-user: `user_id` column + `auth.uid()`-scoped RLS (today: single account)
+- PWA offline: add a service worker so the web app loads with no signal
 - Habits module (second tracker)
 - Rest timer, bodyweight tracking, workout templates, kg toggle
