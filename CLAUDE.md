@@ -1,5 +1,7 @@
 @AGENTS.md
 
+See ROADMAP.md for feature status (done / next / backlog). Keep it updated.
+
 # Progress Tracker — architecture notes
 
 Personal offline-first tracker. Expo SDK 57 + Expo Router + React Native Web
