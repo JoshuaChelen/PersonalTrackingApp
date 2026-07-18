@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "GymTrackingApp",
+    "name": "Progress Tracker",
     "slug": "GymTrackingApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "progresstracker",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0B0F1A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,7 +21,13 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "themeColor": "#0B0F1A",
+      "backgroundColor": "#0B0F1A",
+      "display": "standalone"
+    },
+    "plugins": ["expo-router"]
   }
 }
